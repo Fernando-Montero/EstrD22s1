@@ -77,16 +77,15 @@
 	
 	implica :: Bool -> Bool -> Bool
 	implica True False = False
-	implica _ _ = True 
+	implica False _ = True 
 	
 	yTambien :: Bool -> Bool -> Bool
-	yTambien True True = True
-	yTambien _ _ = False
+	yTambien False _ = False
+	yTambien _ b = b
 	
 	oBien :: Bool -> Bool -> Bool
-	oBien True _ = True
-	oBien _ True = True
-	oBien _ _ = False
+	oBien False b = b
+	oBien b _ = b
 	
 	
 	--Registros
@@ -108,8 +107,11 @@
 	cambioDeNombre s (P n e) = (P s e)
 	
 	esMayorQueLaOtra :: Persona -> Persona -> Bool
-	esMayorQueLaOtra p1 p2 = if (edad p1) > (edad p2) 
-							then True else False
+	esMayorQueLaOtra p1 p2 = edad p1 > edad p2 
+						
+	jose = P "Jose" 18
+	juan = P "Juan" 28
+	
 	
 	laQueEsMayor :: Persona -> Persona -> Persona
 	laQueEsMayor p1 p2 = if esMayorQueLaOtra p1 p2
@@ -140,17 +142,17 @@
 	
 	
 	cantidadDePokemonDe :: TipoDePokemon -> Entrenador -> Int
-	cantidadDePokemonDe tip (ConsEn n p1 p2) = unoSiEsDeTipo tip (tipoDePokemon p1) +
-											     unoSiEsDeTipo tip (tipoDePokemon p2)
+	cantidadDePokemonDe tip (ConsEn n p1 p2) = unoSiesDelMismoTipo tip (tipoDePokemon p1) +
+											     unoSiesDelMismoTipo tip (tipoDePokemon p2)
 	
-	esDeTipo :: TipoDePokemon -> TipoDePokemon -> Bool
-	esDeTipo Agua Agua = True
-	esDeTipo Planta Planta = True
-	esDeTipo Fuego Fuego = True
-	esDeTipo _ _ = False	
+	esDelMismoTipo :: TipoDePokemon -> TipoDePokemon -> Bool
+	esDelMismoTipo Agua Agua = True
+	esDelMismoTipo Planta Planta = True
+	esDelMismoTipo Fuego Fuego = True
+	esDelMismoTipo _ _ = False	
 	
-	unoSiEsDeTipo :: TipoDePokemon -> TipoDePokemon -> Int
-	unoSiEsDeTipo t1 t2 = if esDeTipo t1 t2 then 1 else 0
+	unoSiesDelMismoTipo :: TipoDePokemon -> TipoDePokemon -> Int
+	unoSiesDelMismoTipo t1 t2 = if esDelMismoTipo t1 t2 then 1 else 0
 	
 	
 
@@ -186,7 +188,7 @@
 	elPrimero (x:xs)= x     
 	
 	sinElPrimero :: [a] -> [a]
-	sinElPrimero [] = []
+	sinElPrimero [] = error "la lista esta vacia"
 	sinElPrimero (x:xs) = xs
 	
 	splitHead :: [a] -> (a, [a])
