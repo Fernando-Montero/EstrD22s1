@@ -11,9 +11,9 @@
 	sucesor [] = []
 	sucesor (x:xs) = (x+1) : sucesor xs
 	
-	conjugacion :: [Bool] -> Bool
-	conjugacion [] = True 
-	conjugacion (b:bs) = b && conjugacion bs
+	conjuncion :: [Bool] -> Bool
+	conjuncion [] = True 
+	conjuncion (b:bs) = b && conjuncion bs
 	
 	disyuncion :: [Bool] -> Bool
 	disyuncion [] = False 
@@ -25,14 +25,17 @@
 	
 	pertenece :: Eq a => a -> [a] -> Bool
 	pertenece e [] = False
-	pertenece e (x:xs) = e==x || pertenece e xs
+	pertenece e (xs:xss) = e==xs || pertenece e xss
 	
 	apariciones :: Eq a => a -> [a] -> Int 
 	apariciones e [] = 0
 	apariciones e (x:xs) =  unoSiEsIgual e x + apariciones e xs
 	
 	unoSiEsIgual :: Eq a => a -> a -> Int
-	unoSiEsIgual e1 e2 = if e1 == e2 then 1 else 0 
+	unoSiEsIgual e1 e2 = if sonElementosIguales e1 e2 then 1 else 0 
+	
+	sonElementosIguales :: Eq a => a -> a -> Bool
+	sonElementosIguales e1 e2 = e1 == e2
 	
 	losMenoresA :: Int -> [Int] -> [Int]
 	losMenoresA n [] = []
@@ -45,14 +48,10 @@
 												then [x] ++ lasDeLongitudMayorA n xs
 												else lasDeLongitudMayorA n xs
 	
-	agregarAlFinal :: [a] -> a -> [a]
-	agregarAlFinal [] e = [e]
-	agregarAlFinal xs e = xs ++ [e]
-	
+
 	agregar :: [a] -> [a] -> [a]
 	agregar [] ys = ys
-	agregar xs [] = xs
-	agregar xs (y:ys) = agregar (agregarAlFinal xs y) ys
+	agregar (x:xs) ys = x : agregar xs ys
 	
 	reversa :: [a] -> [a]
 	reversa [] = []
@@ -72,7 +71,7 @@
 	factorial n = if n > 0 then n * (factorial (n-1)) else 1 
 	
 	cuentaRegresiva :: Int -> [Int]
-	cuentaRegresiva n = if n < 1 then [] else cuentaRegresiva (n-1) ++ [n]
+	cuentaRegresiva n = if n < 1 then [] else n:cuentaRegresiva (n-1)
 	
 	repetir  :: Int -> a -> [a] 
 	repetir 0 a = []
@@ -137,16 +136,12 @@
 	
 	todosLosPokemonDeTipo :: TipoDePokemon -> [Pokemon] -> [Pokemon]
 	todosLosPokemonDeTipo t [] = []
-	todosLosPokemonDeTipo t (x:xs) = if esDelMismoTipo t (tipoDePokemon x) 
+	todosLosPokemonDeTipo t (x:xs) = if t == (tipoDePokemon x) 
 													then x : (todosLosPokemonDeTipo t xs)
 												    else todosLosPokemonDeTipo t xs
 	
 	tipoDePokemon :: Pokemon -> TipoDePokemon
 	tipoDePokemon (ConsPokemon t e) = t
-	
-	esDelMismoTipo :: TipoDePokemon -> TipoDePokemon -> Bool
-	esDelMismoTipo t1 t2 = t1==t2 
-	
 	
 
 	losQueLeGanan :: TipoDePokemon -> Entrenador -> Entrenador -> Int
@@ -171,19 +166,17 @@
 	
 	leGanaAAlguno :: Pokemon -> [Pokemon]->Bool
 	leGanaAAlguno p [] = False
-	leGanaAAlguno p (x:xs) = tipoSuperior (tipoDePokemon p)(tipoDePokemon x)
-											|| leGanaAAlguno p xs
+	leGanaAAlguno p (x:xs) = superaA  p x || leGanaAAlguno p xs
 	
 	losQueLeGananAAlguno :: [Pokemon] -> [Pokemon] -> [Pokemon]
 	losQueLeGananAAlguno [] ys = []
-	losQueLeGananAAlguno xs [] = []
 	losQueLeGananAAlguno (x:xs) ys = if leGanaAAlguno x ys 
 													then x : losQueLeGananAAlguno xs ys		
 													else losQueLeGananAAlguno xs ys	
 	
 	cantidadDeTipo :: TipoDePokemon -> [Pokemon] -> Int
 	cantidadDeTipo t [] = 0
-	cantidadDeTipo t (x:xs) = if esDelMismoTipo (tipoDePokemon x) t then 1 + cantidadDeTipo t xs
+	cantidadDeTipo t (x:xs) = if (tipoDePokemon x) == t then 1 + cantidadDeTipo t xs
 										     else  cantidadDeTipo t xs
 	
 	esMaestroPokemon :: Entrenador -> Bool
@@ -191,7 +184,7 @@
 	
 	poseeUnoDeTipo:: TipoDePokemon -> [Pokemon]-> Bool
 	poseeUnoDeTipo t [] = False
-	poseeUnoDeTipo t (x:xs) = esDelMismoTipo t (tipoDePokemon x)||poseeUnoDeTipo t xs 
+	poseeUnoDeTipo t (x:xs) = t ==(tipoDePokemon x)||poseeUnoDeTipo t xs 
 	
 	poseeDeTodosLosTipos :: [Pokemon]->Bool
 	poseeDeTodosLosTipos xs = poseeUnoDeTipo Agua xs && 
@@ -224,14 +217,22 @@
 											else x : sinProyectosRepetidos xs
 	
 	losDevSenior :: Empresa -> [Proyecto] -> Int
-	losDevSenior (ConsEmpresa ps) [] = 0
+	--losDevSenior (ConsEmpresa ps) [] = 0
 	losDevSenior (ConsEmpresa ps) xs = length(pertenecenAlProyecto (desarrolladoresSenior ps) xs)
 	
 	
 	--proposito : dado un Rol devuelve una lista con ese Rol si el desarrollador es Senior
 	desarrolladorSenior :: Rol -> [Rol]
-	desarrolladorSenior (Developer Senior p) = [Developer Senior p]
-	desarrolladorSenior (Developer _ p) = []
+	desarrolladorSenior r = if esSenior (rangoDeDesarrollador r)
+								then [r]
+								else []
+	
+	esSenior :: Seniority -> Bool
+	esSenior Senior = True
+	esSenior _ = False
+	
+	rangoDeDesarrollador :: Rol -> Seniority
+	rangoDeDesarrollador (Developer s p) = s
 	
 	desarrolladoresSenior :: [Rol] -> [Rol]
 	desarrolladoresSenior [] = []
@@ -250,48 +251,56 @@
 
 
 
-	--cantQueTrabajanEn :: [Proyecto] -> Empresa -> Int
-	--
-	--
-	--
-	
-	--asignadosPorProyecto :: Empresa -> [(Proyecto, Int)]
-	--
-	--
-	--
+	cantQueTrabajanEn :: [Proyecto] -> Empresa -> Int
+	cantQueTrabajanEn ps e = cantDevsQueParticipan (devsDeLaEmpresa e) ps  
 	
 	
+	devsDeLaEmpresa :: Empresa -> [Rol]
+	devsDeLaEmpresa (ConsEmpresa rs) = rs
+	
+	cantDevsQueParticipan :: [Rol] -> [Proyecto] -> Int
+	cantDevsQueParticipan [] ps = 0
+	cantDevsQueParticipan (r:rs) ps = if perteneceAlProyecto r ps 
+								then 1 + cantDevsQueParticipan rs ps
+								else cantDevsQueParticipan rs ps
+	
+	
+	
+	asignadosPorProyecto :: Empresa -> [(Proyecto, Int)]
+	asignadosPorProyecto e = parDevsEnProyectos (sinProyectosRepetidos (proyectos e))(devsDeLaEmpresa e)
+	
+	
+	
+	cantDevsEnProyecto :: Proyecto -> [Rol] -> Int 
+	cantDevsEnProyecto p [] = 0
+	cantDevsEnProyecto p (x:xs) = if estaEnElProyecto x p
+										then 1 + cantDevsEnProyecto p xs 
+										else cantDevsEnProyecto p xs 
+	
+	estaEnElProyecto :: Rol -> Proyecto -> Bool
+	estaEnElProyecto (Developer s pb) p = p == pb
+	
+	parCantDevsEnProyecto :: Proyecto -> [Rol] -> (Proyecto,Int)
+	parCantDevsEnProyecto p [] = (p , 0)
+	parCantDevsEnProyecto p rs =  (p ,cantDevsEnProyecto p rs)
+	
+	parDevsEnProyectos :: [Proyecto] -> [Rol] -> [(Proyecto,Int)]
+	parDevsEnProyectos [] rs = []
+	parDevsEnProyectos (p:ps) rs = [parCantDevsEnProyecto p rs] ++
+											parDevsEnProyectos ps rs 
 	
 	
 	pro1 = ConsProyecto "cajero"
 	pro2 = ConsProyecto "banco"
 	pro3 = ConsProyecto "municipalidad"
+	pro4 =  ConsProyecto "universidad"
 	
 	desa1= Developer Junior pro1 
 	desa2= Developer SemiSenior pro1
 	desa3= Developer Senior pro2
-	desa4= Developer Senior pro3
+	desa4= Developer Senior pro4
 	empresa = ConsEmpresa [desa1,desa2,desa3,desa4]
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	empresa2 = ConsEmpresa []
 	
 	
 	kyogre = ConsPokemon Agua 70
@@ -310,23 +319,4 @@
 	miguel = P "Miguel" 38
 	
 	multitud = [jose,juan,miguel]
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
