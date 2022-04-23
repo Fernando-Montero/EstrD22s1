@@ -32,7 +32,10 @@
     apariciones e (x:xs) = unoSiEsIgual e x + apariciones e xs
     
     unoSiEsIgual :: Eq a => a -> a -> Int
-    unoSiEsIgual e1 e2 = if e1 == e2 then 1 else 0 
+    unoSiEsIgual e1 e2 = if sonIguales e1 e2 then 1 else 0 
+    
+    sonIguales :: Eq a => a -> a -> Bool
+    sonIguales e1 e2 = e1 == e2 
 
 
     losMenoresA :: Int -> [Int] -> [Int]
@@ -232,6 +235,7 @@
     
     esDevSenior:: Rol -> Bool
     esDevSenior (Developer s p) = esSenior s 
+    esDevSenior _ = False
     
     esSenior :: Seniority -> Bool
     esSenior Senior = True
@@ -279,6 +283,10 @@
     asignadosPorProyecto :: Empresa -> [(Proyecto, Int)]
     asignadosPorProyecto (ConsEmpresa rs) = parRolEnProyectos(proyectosDeRoles rs)rs 
     
+    parRolEnProyectos :: [Proyecto] -> [Rol] -> [(Proyecto,Int)]
+    parRolEnProyectos [] rs = []
+    parRolEnProyectos (p:ps) rs = [parCantRolEnProyecto p rs] ++
+                                      parRolEnProyectos ps rs 
  
     parCantRolEnProyecto :: Proyecto -> [Rol] -> (Proyecto,Int)
     parCantRolEnProyecto p [] = (p , 0)
