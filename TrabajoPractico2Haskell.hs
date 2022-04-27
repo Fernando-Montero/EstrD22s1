@@ -219,7 +219,9 @@
                                       
     sinRepetidos :: Eq a => [a]-> [a]
     sinRepetidos [] = []
-    sinRepetidos (x:xs) = if elem x xs then sinRepetidos xs else x:(sinRepetidos xs) 
+    sinRepetidos (x:xs) = if pertenece x (sinRepetidos xs) then sinRepetidos xs else x: sinRepetidos xs
+    
+    
     
     losDevSenior :: Empresa -> [Proyecto] -> Int
     losDevSenior (ConsEmpresa ps) xs = length(pertenecenAlProyecto (desarrolladoresSenior ps) xs)
@@ -227,19 +229,22 @@
 
     --proposito : dado un Rol devuelve una lista con ese Rol si el desarrollador es Senior
     desarrolladorSenior :: Rol -> [Rol]
-    desarrolladorSenior r = if esDevSenior r then enlistarRol r 
+    desarrolladorSenior r = if esDev r && esRolSenior r then [r] 
                                              else []
     
-    enlistarRol :: Rol -> [Rol]
-    enlistarRol r = [r]
-    
-    esDevSenior:: Rol -> Bool
-    esDevSenior (Developer s p) = esSenior s 
-    esDevSenior _ = False
+    esDev :: Rol -> Bool
+    esDev (Developer s p) = True
+    esDev _ = False
     
     esSenior :: Seniority -> Bool
     esSenior Senior = True
     esSenior _ = False
+    
+    esRolSenior :: Rol -> Bool
+    esRolSenior (Developer s p)  = esSenior s
+    esRolSenior (Management s p) = esSenior s 
+    
+    
     
     desarrolladoresSenior :: [Rol] -> [Rol]
     desarrolladoresSenior [] = []
@@ -257,7 +262,7 @@
 
 
     cantQueTrabajanEn :: [Proyecto] -> Empresa -> Int
-    cantQueTrabajanEn ps (ConsEmpresa rs) = cantRolQueParticipan(losDeRolDesarrollador rs) ps
+    cantQueTrabajanEn ps (ConsEmpresa rs) = cantRolQueParticipan rs ps
 
 
     losDeRolDesarrollador :: [Rol] -> [Rol]
@@ -265,11 +270,10 @@
     losDeRolDesarrollador (r:rs) = desarrollador r ++ losDeRolDesarrollador rs 
     
     desarrollador :: Rol -> [Rol]
-    desarrollador r = if esDev r then enlistarRol r 
-                                    else []
-    esDev :: Rol -> Bool
-    esDev (Developer s p) = True
-    esDev _ = False 
+    desarrollador r = if esDev r then [r] 
+                                    else [] 
+   
+    
     
     
     cantRolQueParticipan :: [Rol] -> [Proyecto] -> Int
@@ -278,35 +282,21 @@
                                 then 1 + cantRolQueParticipan rs ps
                                 else cantRolQueParticipan rs ps
     
+    ----------------------------------------------------------------------------------------
     
-    
-    asignadosPorProyecto :: Empresa -> [(Proyecto, Int)]
-    asignadosPorProyecto (ConsEmpresa rs) = parRolEnProyectos(proyectosDeRoles rs)rs 
-    
-    parRolEnProyectos :: [Proyecto] -> [Rol] -> [(Proyecto,Int)]
-    parRolEnProyectos [] rs = []
-    parRolEnProyectos (p:ps) rs = [parCantRolEnProyecto p rs] ++
-                                      parRolEnProyectos ps rs 
- 
-    parCantRolEnProyecto :: Proyecto -> [Rol] -> (Proyecto,Int)
-    parCantRolEnProyecto p [] = (p , 0)
-    parCantRolEnProyecto p rs =  (p ,cantRolEnProyecto p rs)
-    
-    cantRolEnProyecto :: Proyecto -> [Rol] -> Int 
-    cantRolEnProyecto p [] = 0
-    cantRolEnProyecto p (x:xs) = if estaEnElProyecto x p
-                                        then 1 + cantRolEnProyecto p xs 
-                                        else cantRolEnProyecto p xs 
-    
+   -- asignadosPorProyecto :: Empresa -> [(Proyecto, Int)]
+   -- asignadosPorProyecto (ConsEmpresa rs) =      rs 
+	
+	
+	
+	
+
+
     estaEnElProyecto :: Rol -> Proyecto -> Bool
     estaEnElProyecto (Developer s pb) p = p == pb
-   
-    parRolEnProyectos :: [Proyecto] -> [Rol] -> [(Proyecto,Int)]
-    parRolEnProyectos [] rs = []
-    parRolEnProyectos (p:ps) rs = [parCantRolEnProyecto p rs] ++
-                                            parRolEnProyectos ps rs 
-    
-    
+    estaEnElProyecto(Management s pb) p = p == pb
+
+	
     pr1 = ConsProyecto "cajero"
     pr2 = ConsProyecto "banco"
     pr3 = ConsProyecto "municipalidad"
@@ -316,7 +306,7 @@
     desa2= Developer SemiSenior pr1
     desa3= Developer Senior pr2
     desa4= Developer Senior pr4
-    mana = Management Senior pr4
+    mana = Management Senior pr1
     desa5 = Developer SemiSenior pr4
     
     empresa = ConsEmpresa [desa1,desa2,desa3,desa4,mana,desa5]
