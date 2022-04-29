@@ -31,11 +31,11 @@
     apariciones e [] = 0
     apariciones e (x:xs) = unoSiEsIgual e x + apariciones e xs
     
-    unoSiEsIgual :: Eq a => a -> a -> Int
-    unoSiEsIgual e1 e2 = if sonIguales e1 e2 then 1 else 0 
     
-    sonIguales :: Eq a => a -> a -> Bool
-    sonIguales e1 e2 = e1 == e2 
+    unoSiEsIgual :: Eq a => a -> a -> Int
+    unoSiEsIgual e1  e2 = case (e1 == e2) of
+                                             True -> 1                      
+                                             False -> 0
 
     losMenoresA :: Int -> [Int] -> [Int]
     losMenoresA n [] = []
@@ -217,13 +217,14 @@
     
     sinProyectosRepetidos :: [Proyecto] -> [Proyecto]
     sinProyectosRepetidos [] = []
-    sinProyectosRepetidos (p:ps) =  quitarProyectoSiPertenece p (sinProyectosRepetidos ps)
+    sinProyectosRepetidos (p:ps) = p : quitarProyectoSiPertenece p (sinProyectosRepetidos ps)
     
+     
     quitarProyectoSiPertenece :: Proyecto -> [Proyecto] -> [Proyecto]
     quitarProyectoSiPertenece pr [] = []
     quitarProyectoSiPertenece pr (p:ps) = if esMismoProyecto pr p then ps 
                                                                                                 else p : quitarProyectoSiPertenece pr ps 
-    
+
 
     losDevSenior :: Empresa -> [Proyecto] -> Int
     losDevSenior (ConsEmpresa ps) xs = losQuePertenecenAlProyecto (desarrolladoresSenior ps) xs  
