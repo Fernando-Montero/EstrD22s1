@@ -37,7 +37,6 @@
     sonIguales :: Eq a => a -> a -> Bool
     sonIguales e1 e2 = e1 == e2 
 
-
     losMenoresA :: Int -> [Int] -> [Int]
     losMenoresA n [] = []
     losMenoresA n (x:xs) = if x < n then x : losMenoresA n xs 
@@ -199,13 +198,13 @@
 ---------------------------------------------------------------------------------------------------------
     
     data Seniority = Junior | SemiSenior | Senior deriving Show
-    data Proyecto = ConsProyecto String  deriving (Show,Eq)
+    data Proyecto = ConsProyecto String  deriving (Show)
     data Rol = Developer Seniority Proyecto | Management Seniority Proyecto deriving Show
     data Empresa = ConsEmpresa [Rol] deriving Show
     
     
     proyectos :: Empresa -> [Proyecto]
-    proyectos (ConsEmpresa xs) = sinRepetidos(proyectosDeRoles xs)
+    proyectos (ConsEmpresa xs) = sinProyectosRepetidos(proyectosDeRoles xs)
     
     
     proyectosDeRoles :: [Rol] -> [Proyecto]
@@ -216,50 +215,55 @@
     proyectoDeRol (Developer s p) = p
     proyectoDeRol (Management s p) = p
     
-                                      
-    sinRepetidos :: Eq a => [a]-> [a]
-    sinRepetidos [] = []
-    sinRepetidos (x:xs) = if pertenece x (sinRepetidos xs) then sinRepetidos xs else x: sinRepetidos xs
+    sinProyectosRepetidos :: [Proyecto] -> [Proyecto]
+    sinProyectosRepetidos [] = []
+    sinProyectosRepetidos (p:ps) =  quitarProyectoSiPertenece p (sinProyectosRepetidos ps)
     
-    
-    
-    losDevSenior :: Empresa -> [Proyecto] -> Int
-    losDevSenior (ConsEmpresa ps) xs = length(pertenecenAlProyecto (desarrolladoresSenior ps) xs)
+    quitarProyectoSiPertenece :: Proyecto -> [Proyecto] -> [Proyecto]
+    quitarProyectoSiPertenece pr [] = []
+    quitarProyectoSiPertenece pr (p:ps) = if esMismoProyecto pr p then ps 
+                                                                                                else p : quitarProyectoSiPertenece pr ps 
     
 
+
+    losDevSenior :: Empresa -> [Proyecto] -> Int
+    losDevSenior (ConsEmpresa ps) xs = losQuePertenecenAlProyecto (desarrolladoresSenior ps) xs  
+    
+    losQuePertenecenAlProyecto :: [Rol] -> [Proyecto] -> Int 
+    losQuePertenecenAlProyecto [] ps = 0
+    losQuePertenecenAlProyecto (r:rs) ps = (unoSiperteneceAlProyecto r ps) + (losQuePertenecenAlProyecto rs ps) 
+    
+    unoSiperteneceAlProyecto :: Rol -> [Proyecto] -> Int
+    unoSiperteneceAlProyecto r ps = if perteneceAlProyecto r ps then 1 else 0
+
+  
     --proposito : dado un Rol devuelve una lista con ese Rol si el desarrollador es Senior
+    desarrolladoresSenior :: [Rol] -> [Rol]
+    desarrolladoresSenior [] = []
+    desarrolladoresSenior (x:xs) = (desarrolladorSenior x) ++ (desarrolladoresSenior xs)
+    
     desarrolladorSenior :: Rol -> [Rol]
     desarrolladorSenior r = if esDev r && esRolSenior r then [r] 
                                              else []
-    
+                                             
     esDev :: Rol -> Bool
     esDev (Developer s p) = True
     esDev _ = False
-    
-    esSenior :: Seniority -> Bool
-    esSenior Senior = True
-    esSenior _ = False
     
     esRolSenior :: Rol -> Bool
     esRolSenior (Developer s p)  = esSenior s
     esRolSenior (Management s p) = esSenior s 
     
-    
-    
-    desarrolladoresSenior :: [Rol] -> [Rol]
-    desarrolladoresSenior [] = []
-    desarrolladoresSenior (x:xs) = (desarrolladorSenior x) ++ (desarrolladoresSenior xs)
+    esSenior :: Seniority -> Bool
+    esSenior Senior = True
+    esSenior _ = False
     
     perteneceAlProyecto :: Rol -> [Proyecto] -> Bool
-    perteneceAlProyecto r ps = elem (proyectoDeRol r) ps
-
- 
-    pertenecenAlProyecto :: [Rol]->[Proyecto] -> [Rol]
-    pertenecenAlProyecto [] ps = []
-    pertenecenAlProyecto (x:xs) ps = if perteneceAlProyecto x ps 
-                                                    then x : pertenecenAlProyecto xs ps
-                                                    else pertenecenAlProyecto xs ps
-
+    perteneceAlProyecto r [] = False
+    perteneceAlProyecto r (p:ps) =  esProyectoDeRol r p ||  perteneceAlProyecto r ps
+    
+    esProyectoDeRol :: Rol -> Proyecto -> Bool
+    esProyectoDeRol r p = esMismoProyecto (proyectoDeRol r) p
 
     cantQueTrabajanEn :: [Proyecto] -> Empresa -> Int
     cantQueTrabajanEn ps (ConsEmpresa rs) = cantRolQueParticipan rs ps
@@ -272,10 +276,7 @@
     desarrollador :: Rol -> [Rol]
     desarrollador r = if esDev r then [r] 
                                     else [] 
-   
-    
-    
-    
+
     cantRolQueParticipan :: [Rol] -> [Proyecto] -> Int
     cantRolQueParticipan [] ps = 0
     cantRolQueParticipan (r:rs) ps = if perteneceAlProyecto r ps 
@@ -284,19 +285,27 @@
     
     ----------------------------------------------------------------------------------------
     
-   -- asignadosPorProyecto :: Empresa -> [(Proyecto, Int)]
-   -- asignadosPorProyecto (ConsEmpresa rs) =      rs 
-	
-	
-	
-	
+    asignadosPorProyecto :: Empresa -> [(Proyecto, Int)]
+    asignadosPorProyecto (ConsEmpresa rs) = procesarProyectos rs 
 
+    
+    
+    procesarProyectos :: [Rol]->[(Proyecto,Int)]
+    procesarProyectos [] = []
+    procesarProyectos (r:rs) = incluirElProyectoDe r (procesarProyectos rs) 
 
-    estaEnElProyecto :: Rol -> Proyecto -> Bool
-    estaEnElProyecto (Developer s pb) p = p == pb
-    estaEnElProyecto(Management s pb) p = p == pb
+    incluirElProyectoDe:: Rol -> [(Proyecto,Int)] -> [(Proyecto,Int)] 
+    incluirElProyectoDe r [] = [(proyectoDeRol r,1)]
+    incluirElProyectoDe r ((p,n):pns) =  if esMismoProyecto (proyectoDeRol r ) p  
+                                                                then (p,n+1) : incluirElProyectoDe r pns
+                                                                else  (p,n) : incluirElProyectoDe r pns
+ 
+    esMismoProyecto :: Proyecto -> Proyecto -> Bool
+    esMismoProyecto p1 p2 = nombreDeProyecto p1 == nombreDeProyecto p2
+    
+    nombreDeProyecto :: Proyecto -> String
+    nombreDeProyecto (ConsProyecto s) = s
 
-	
     pr1 = ConsProyecto "cajero"
     pr2 = ConsProyecto "banco"
     pr3 = ConsProyecto "municipalidad"
