@@ -225,7 +225,6 @@
                                                                                                 else p : quitarProyectoSiPertenece pr ps 
     
 
-
     losDevSenior :: Empresa -> [Proyecto] -> Int
     losDevSenior (ConsEmpresa ps) xs = losQuePertenecenAlProyecto (desarrolladoresSenior ps) xs  
     
@@ -240,15 +239,15 @@
     --proposito : dado un Rol devuelve una lista con ese Rol si el desarrollador es Senior
     desarrolladoresSenior :: [Rol] -> [Rol]
     desarrolladoresSenior [] = []
-    desarrolladoresSenior (x:xs) = (desarrolladorSenior x) ++ (desarrolladoresSenior xs)
-    
-    desarrolladorSenior :: Rol -> [Rol]
-    desarrolladorSenior r = if esDev r && esRolSenior r then [r] 
-                                             else []
-                                             
-    esDev :: Rol -> Bool
-    esDev (Developer s p) = True
-    esDev _ = False
+    desarrolladoresSenior (r:rs) = esDesarrolladorSenior r ++ (desarrolladoresSenior rs)
+
+    esDesarrolladorSenior :: Rol -> [Rol]                          
+    esDesarrolladorSenior r = if esRolSenior r then desarrollador r else []  
+
+    desarrollador :: Rol -> [Rol]
+    desarrollador (Developer s p) = [Developer s p]
+    desarrollador _ = []     
+
     
     esRolSenior :: Rol -> Bool
     esRolSenior (Developer s p)  = esSenior s
@@ -272,10 +271,6 @@
     losDeRolDesarrollador :: [Rol] -> [Rol]
     losDeRolDesarrollador [] = []
     losDeRolDesarrollador (r:rs) = desarrollador r ++ losDeRolDesarrollador rs 
-    
-    desarrollador :: Rol -> [Rol]
-    desarrollador r = if esDev r then [r] 
-                                    else [] 
 
     cantRolQueParticipan :: [Rol] -> [Proyecto] -> Int
     cantRolQueParticipan [] ps = 0
