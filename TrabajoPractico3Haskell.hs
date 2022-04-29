@@ -160,14 +160,13 @@
     elMasLargo xs ys = if length xs > length ys then xs else ys 
     
 --
-    todosLosCaminos :: Tree a -> [[a]]
-    todosLosCaminos EmptyT = []
-    todosLosCaminos (NodeT e t1 t2) =  func e (todosLosCaminos t1) (todosLosCaminos t2)
+  --  todosLosCaminos :: Tree a -> [[a]]
+  --  todosLosCaminos EmptyT = []
+   -- todosLosCaminos (NodeT e t1 t2) =  func e (todosLosCaminos t1) (todosLosCaminos t2)
     
-    func :: a -> [[a]] -> [[a]] -> [[a]]
-    func e [] yss = yss
-    func e (xs:xss) yss =   [e:xs]  ++ func e xss yss 
-    
+   -- func :: a -> [[a]] -> [[a]] -> [[a]]
+   -- func e [] yss = 
+   -- func e (xs:xss) yss = 
     
      
     data ExpA = Valor Int |Sum ExpA ExpA |Prod ExpA ExpA|Neg ExpA deriving Show
